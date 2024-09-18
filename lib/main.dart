@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gymtracker_fl/gym_item.dart';
-
-import 'dialog_content.dart';
 
 void main() {
   runApp(const MyApp());
@@ -72,7 +69,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String splitName = "";
-  List<GymItem> items = [];
+  List<String> items = [];
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -87,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Future<void> wordt gebruikt bij functies die asynchroon werken zoals
   // showDialog.
   Future<void> _addSplit(String type) async{
+    String userInput ="";
     return showDialog<void>(
       context: context,
       builder: (BuildContext context){
@@ -99,11 +97,67 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             textAlign: TextAlign.center,
           ),
-          content: DialogContent(onSave: (title) =>
-            setState(() {
-              items.add(GymItem(title: title, onDelete: () => _deleteSplit(items.length)));
-            })
-        ));
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:[
+              TextField(
+                onChanged: (value) {
+                  userInput = value;
+                },
+                decoration: const InputDecoration(
+                    hintText: "split name",
+                    hintStyle: TextStyle(
+                      fontSize: 15.0,
+                      color: Color.fromRGBO(215, 215, 215, 1.0),
+                    ),
+                    filled: true,
+                    fillColor: Color.fromRGBO(240, 240, 240, 1.0)
+                ),
+              ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 16.0)
+              ),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children:[
+                      TextButton(
+                        child: const Text(
+                          "close",
+                          style: TextStyle(
+                            color: Colors.white
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.black
+                        ),
+                        onPressed: (){
+                        Navigator.of(context).pop();
+                  },
+                ),
+                      TextButton(
+                        child: const Text(
+                            "save",
+                            style: TextStyle(
+                              color: Colors.white
+                            ),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.black
+                        ),
+                        onPressed: (){
+                        setState(() {
+                          if(userInput!="") {
+                            items.add(userInput);
+                          }
+                      });
+                        Navigator.of(context).pop();
+                      },
+                      )
+                ]
+              )
+            ]
+          ),
+        );
       }
     );
   }
@@ -116,7 +170,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-
+  void _editSplit(int index){
+    setState(() {
+      String editName = "";
+      _addSplit("edit");
+      editName = items[items.length-1];
+      items[index] = editName;
+      items.removeLast();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +282,40 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: (index%2 == 0)
                         ? Color.fromRGBO(250, 250, 250, 1.0)
                         : Color.fromRGBO(230, 230, 230, 1.0),
-                      child: GymItem(title: 'test',onDelete: () => this._deleteSplit(index))
+                      child: Row(
+                          children:[
+                            Expanded(
+                                child: Center(
+                                  child: Text(
+                                    items[index],
+                                    style: TextStyle(
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.bold
+                                    ),
+                                  ),
+                                )
+                            ),
+                            Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children:[
+                                  IconButton(
+                                    icon: Icon(Icons.edit),
+                                    onPressed: () => _editSplit(index),
+                                    style: IconButton.styleFrom(
+                                        iconSize: 15
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () => _deleteSplit(index),
+                                    style: IconButton.styleFrom(
+                                        iconSize: 15
+                                    ),
+                                  ),
+                                ]
+                            ),
+                          ]
+                      ),
                     );
                   },
                 separatorBuilder: (BuildContext context, int index) => const Divider(color: Colors.white),
