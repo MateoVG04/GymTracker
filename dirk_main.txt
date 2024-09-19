@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gymtracker_fl/bottom_navigation_bar.dart';
-// git revert HEAD
-// git push
+import 'package:gymtracker_fl/gym_item.dart';
+
+import 'dialog_content.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -71,8 +72,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String splitName = "";
-  String test = "";
-  List<String> items = [];
+  List<GymItem> items = [];
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -86,12 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Future<void> wordt gebruikt bij functies die asynchroon werken zoals
   // showDialog.
-  Future<void> _addSplit(String type,String value) async{
-    String userInput ="";
-    test = "";
-    TextEditingController _controller = TextEditingController(
-      text: (type == "edit") ? value : "",
-    );
+  Future<void> _addSplit(String type) async{
     return showDialog<void>(
       context: context,
       builder: (BuildContext context){
@@ -104,75 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             textAlign: TextAlign.center,
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children:[
-              TextField(
-                controller: _controller,
-                onChanged: (value) {
-                  userInput = value;
-                },
-
-                decoration: const InputDecoration(
-                    hintText: "split name",
-                    hintStyle: TextStyle(
-                      fontSize: 15.0,
-                      color: Color.fromRGBO(215, 215, 215, 1.0),
-                    ),
-                    filled: true,
-                    fillColor: Color.fromRGBO(240, 240, 240, 1.0)
-                ),
-              ),
-              Padding(
-                  padding: const EdgeInsets.only(top: 16.0)
-              ),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children:[
-                      TextButton(
-                        child: const Text(
-                          "close",
-                          style: TextStyle(
-                            color: Colors.white
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.black
-                        ),
-                        onPressed: (){
-                        Navigator.of(context).pop();
-                  },
-                ),
-                      TextButton(
-                        child: const Text(
-                            "save",
-                            style: TextStyle(
-                              color: Colors.white
-                            ),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.black
-                        ),
-                        onPressed: (){
-                        setState(() {
-                          if(userInput!="") {
-                            if(type == "add") {
-                              items.add(userInput);
-                            }else if(type == "edit"){
-                              setState(() {
-                                test = userInput;
-                              });
-                            }
-                          }
-                      });
-                        Navigator.of(context).pop();
-                      },
-                      )
-                ]
-              )
-            ]
-          ),
-        );
+          content: DialogContent(onSave: (title) =>
+            setState(() {
+              items.add(GymItem(title: title, onDelete: () => _deleteSplit(items.length)));
+            })
+        ));
       }
     );
   }
@@ -185,19 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _editSplit(String value) async{
-    String editName = "";
-    print("edit: $editName");
-    print("test: $test");
-    int index = items.indexOf(value);
-    await _addSplit("edit",value);
-    editName = test;
-    setState(() {
-      if (editName.isNotEmpty) {
-        items[index] = editName;
-      }
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -227,8 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
 
       ),
-      body:Expanded(
-      child: Center(
+      body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -249,6 +167,47 @@ class _MyHomePageState extends State<MyHomePage> {
           //mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Padding(
+                padding: const EdgeInsets.only(top:15.0)
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Met deze sizedBox kan je de grootte van je buttons bepalen
+                SizedBox(
+                  // de waardes van de grootte van de buttons kan je bovenaan in
+                  // de widget bepalen
+                  width:buttonWidth,
+                  height:buttonHeigth,
+                  child: ElevatedButton(
+                    onPressed: () => _deleteSplit(0),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+
+                    ),
+                    child: Icon(
+                        Icons.remove,
+                        color: Theme.of(context).colorScheme.onPrimary
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width:buttonWidth,
+                  height:buttonHeigth,
+                  child: ElevatedButton(
+                    onPressed: () => _addSplit("add"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+
+                    ),
+                    child: Icon(
+                        Icons.add,
+                        color: Theme.of(context).colorScheme.onPrimary
+                    ),
+                  ),
+                ),
+              ]
+            ),
+            Padding(
                 padding: const EdgeInsets.only(top:10.0)
             ),
             Expanded(
@@ -261,73 +220,16 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: (index%2 == 0)
                         ? Color.fromRGBO(250, 250, 250, 1.0)
                         : Color.fromRGBO(230, 230, 230, 1.0),
-                      child: Row(
-                          children:[
-                            Expanded(
-                                child: Center(
-                                  child: Text(
-                                    items[index],
-                                    style: TextStyle(
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.bold
-                                    ),
-                                  ),
-                                )
-                            ),
-                            Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children:[
-                                  IconButton(
-                                    icon: Icon(Icons.edit),
-                                    onPressed: () => _editSplit(items[index]),
-                                    style: IconButton.styleFrom(
-                                        iconSize: 15
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.delete),
-                                    onPressed: () => _deleteSplit(index),
-                                    style: IconButton.styleFrom(
-                                        iconSize: 15
-                                    ),
-                                  ),
-                                ]
-                            ),
-                          ]
-                      ),
+                      child: GymItem(title: 'test',onDelete: () => this._deleteSplit(index))
                     );
                   },
                 separatorBuilder: (BuildContext context, int index) => const Divider(color: Colors.white),
               )
-            ),
-            Padding(
-                padding: const EdgeInsets.only(top:10.0)
-            ),
-            SizedBox(
-              width:buttonWidth,
-              height:buttonHeigth,
-              child: ElevatedButton(
-                onPressed: () => _addSplit("add",""),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-
-                ),
-                child: Icon(
-                    Icons.add,
-                    color: Theme.of(context).colorScheme.onPrimary
-                ),
-              ),
-            ),
-            Padding(
-                padding: const EdgeInsets.only(top:20.0)
-            ),
-            const Divider(height: 0,),
-            const BottomNavBar()
-
+            )
           ],
         ),
       ),
-      ),// This trailing comma makes auto-formatting nicer for build methods.
+      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

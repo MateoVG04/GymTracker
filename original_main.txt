@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gymtracker_fl/bottom_navigation_bar.dart';
-// git revert HEAD
-// git push
+
 void main() {
   runApp(const MyApp());
 }
@@ -71,7 +69,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String splitName = "";
-  String test = "";
   List<String> items = [];
   void _incrementCounter() {
     setState(() {
@@ -86,12 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Future<void> wordt gebruikt bij functies die asynchroon werken zoals
   // showDialog.
-  Future<void> _addSplit(String type,String value) async{
+  Future<void> _addSplit(String type) async{
     String userInput ="";
-    test = "";
-    TextEditingController _controller = TextEditingController(
-      text: (type == "edit") ? value : "",
-    );
     return showDialog<void>(
       context: context,
       builder: (BuildContext context){
@@ -108,11 +101,9 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisSize: MainAxisSize.min,
             children:[
               TextField(
-                controller: _controller,
                 onChanged: (value) {
                   userInput = value;
                 },
-
                 decoration: const InputDecoration(
                     hintText: "split name",
                     hintStyle: TextStyle(
@@ -156,13 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: (){
                         setState(() {
                           if(userInput!="") {
-                            if(type == "add") {
-                              items.add(userInput);
-                            }else if(type == "edit"){
-                              setState(() {
-                                test = userInput;
-                              });
-                            }
+                            items.add(userInput);
                           }
                       });
                         Navigator.of(context).pop();
@@ -185,17 +170,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _editSplit(String value) async{
-    String editName = "";
-    print("edit: $editName");
-    print("test: $test");
-    int index = items.indexOf(value);
-    await _addSplit("edit",value);
-    editName = test;
+  void _editSplit(int index){
     setState(() {
-      if (editName.isNotEmpty) {
-        items[index] = editName;
-      }
+      String editName = "";
+      _addSplit("edit");
+      editName = items[items.length-1];
+      items[index] = editName;
+      items.removeLast();
     });
   }
 
@@ -227,8 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
         centerTitle: true,
 
       ),
-      body:Expanded(
-      child: Center(
+      body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -248,6 +228,47 @@ class _MyHomePageState extends State<MyHomePage> {
 
           //mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(
+                padding: const EdgeInsets.only(top:15.0)
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Met deze sizedBox kan je de grootte van je buttons bepalen
+                SizedBox(
+                  // de waardes van de grootte van de buttons kan je bovenaan in
+                  // de widget bepalen
+                  width:buttonWidth,
+                  height:buttonHeigth,
+                  child: ElevatedButton(
+                    onPressed: () => _deleteSplit(0),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+
+                    ),
+                    child: Icon(
+                        Icons.remove,
+                        color: Theme.of(context).colorScheme.onPrimary
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width:buttonWidth,
+                  height:buttonHeigth,
+                  child: ElevatedButton(
+                    onPressed: () => _addSplit("add"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+
+                    ),
+                    child: Icon(
+                        Icons.add,
+                        color: Theme.of(context).colorScheme.onPrimary
+                    ),
+                  ),
+                ),
+              ]
+            ),
             Padding(
                 padding: const EdgeInsets.only(top:10.0)
             ),
@@ -279,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 children:[
                                   IconButton(
                                     icon: Icon(Icons.edit),
-                                    onPressed: () => _editSplit(items[index]),
+                                    onPressed: () => _editSplit(index),
                                     style: IconButton.styleFrom(
                                         iconSize: 15
                                     ),
@@ -299,35 +320,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 separatorBuilder: (BuildContext context, int index) => const Divider(color: Colors.white),
               )
-            ),
-            Padding(
-                padding: const EdgeInsets.only(top:10.0)
-            ),
-            SizedBox(
-              width:buttonWidth,
-              height:buttonHeigth,
-              child: ElevatedButton(
-                onPressed: () => _addSplit("add",""),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-
-                ),
-                child: Icon(
-                    Icons.add,
-                    color: Theme.of(context).colorScheme.onPrimary
-                ),
-              ),
-            ),
-            Padding(
-                padding: const EdgeInsets.only(top:20.0)
-            ),
-            const Divider(height: 0,),
-            const BottomNavBar()
-
+            )
           ],
         ),
       ),
-      ),// This trailing comma makes auto-formatting nicer for build methods.
+      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
